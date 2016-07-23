@@ -1,49 +1,33 @@
-// cc http://kevinboone.net/amqtest.html
+
 package com.vincpel.activemq_example_p2p;
-
-
-
 
 import javax.jms.*;
 import org.apache.activemq.*;
 
 
 public class Producer
-  {
-  public static void main (String[] args)
-      throws Exception
-    {
-    // Create a connection factory referring to the broker host and port
-    ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory
-      ("tcp://localhost:61616");
+{
+	public static void main (String[] args) throws Exception
+	{
+		ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory
+				("tcp://localhost:61616");
 
-    // Note that a new thread is created by createConnection, and it
-    //  does not stop even if connection.stop() is called. We must
-    //  shut down the JVM using System.exit() to end the program
-    Connection connection = factory.createConnection();
+		Connection connection = factory.createConnection();
+		connection.start();
 
-    // Start the connection
-    connection.start();
+		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-    // Create a non-transactional session with automatic acknowledgement
-    Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		Queue queue = session.createQueue("test_queue");
 
-    // Create a reference to the queue test_queue in this session. Note
-    //  that ActiveMQ has auto-creation enabled by default, so this JMS
-    //  destination will be created on the broker automatically
-    Queue queue = session.createQueue("test_queue");
+		MessageProducer producer = session.createProducer(queue);
 
-    // Create a producer for test_queue
-    MessageProducer producer = session.createProducer(queue);
+		TextMessage message = session.createTextMessage ("Hello, activeMQ!");
 
-    // Create a simple text message and send it
-    TextMessage message = session.createTextMessage ("Hello, world!");
-    producer.send(message);
+		producer.send(message);
 
-    // Stop the connection — good practice but redundant here
-    connection.stop();
+		connection.stop();
 
-    System.exit(0);
-    }
-  }
+		System.exit(0);
+	}
+}
 
